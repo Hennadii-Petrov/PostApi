@@ -2,9 +2,5 @@
 
 Steps to run project:
 
-1. python3 -m venv venv
-2. source venv/bin/activate
-3. pip install -r requirements.txt
-4. uvicorn app.main:app --reload
-
-Swagger url: http://0.0.0.0:8000/docs
+1. docker-compose up --build
+2. Swagger url: http://localhost:8000/docs
