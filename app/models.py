@@ -2,7 +2,6 @@
 from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, Date
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.hybrid import hybrid_property
 from .database import Base
 
 

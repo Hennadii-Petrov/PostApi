@@ -1,39 +1,32 @@
-from sqlalchemy import create_engine
+from typing import AsyncGenerator
+
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import psycopg
-from psycopg.rows import dict_row
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.pool import NullPool
+
 from .config import settings
 
-# For psycopg3, use postgresql+psycopg instead of postgresql
-SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
+# psycopg3 async driver
+SQLALCHEMY_DATABASE_URL = (
+    f"postgresql+psycopg_async://{settings.database_username}:{settings.database_password}"
+    f"@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
+)
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_async_engine(
+    SQLALCHEMY_DATABASE_URL,
+    echo=False,
+    future=True,
+    poolclass=NullPool,  # Disable connection pooling for better consistency
+)
+SessionLocal = async_sessionmaker(
+    bind=engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
+)
 Base = declarative_base()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
-connection = None
-cursor = None
-
-try:
-    connection = psycopg.connect(
-        host="localhost",
-        dbname="fastapi",
-        user="postgres",
-        password="0991",  # Correct password
-        autocommit=True,
-        row_factory=dict_row
-    )
-    cursor = connection.cursor()
-    print("Database connection successful")
-except Exception as e:
-    print(f"Error connecting to the database: {e}")
-    print(f"Error type: {type(e).__name__}")
-    print("App will continue without database connection...")
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with SessionLocal() as db:
+        try:
+            yield db
+        finally:
+            await db.close()
