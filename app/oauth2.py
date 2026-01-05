@@ -14,10 +14,6 @@ ALGORITHM = settings.algorithm
 EXPIRATION_TIME_MINUTES = settings.access_token_expire_minutes
 
 
-def create_test_token(data: dict) -> str:
-    return create_access_token(data, timedelta(seconds=5))
-
-
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     to_encode = data.copy()
     
